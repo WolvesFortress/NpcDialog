@@ -32,11 +32,11 @@ class DialogForm{
 	private ?Closure $closeListener = null;
 	private ?Closure $openListener = null;
 
-	public function __construct(private string $dialogText, ?Closure $openListener = null, ?Closure $closeListener = null, ?string $id = null, private bool $closeOnSubmit = true){
+	public function __construct(private string $dialogText, ?Closure $openListener = null, ?Closure $closeListener = null, ?string $id = null, private bool $closeOnSubmit = true, bool $overwrite = false){
 		$this->id = $id ?? Uuid::uuid4()->toString();
 		$this->setOpenListener($openListener);
 		$this->setCloseListener($closeListener);
-		DialogFormStore::registerForm($this);
+		DialogFormStore::registerForm($this, $overwrite);
 
 		$this->onCreation();
 	}
@@ -62,7 +62,7 @@ class DialogForm{
 	}
 
 	public function getActions() : string{//aka the buttons
-		return json_encode($this->buttons);
+		return json_encode(array_values($this->buttons));
 	}
 
 	public function getEntity() : ?Entity{
