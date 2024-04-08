@@ -42,7 +42,7 @@ class PacketListener implements Listener{
 			switch($packet->requestType){
 				case NpcRequestPacket::REQUEST_EXECUTE_ACTION:
 					$logger->debug("Received a NpcRequestPacket action " . $packet->actionIndex);
-					$form = DialogFormStore::getFormByEntity($entity);
+					$form = DialogFormStore::getFormById($packet->sceneName);
 					if($form !== null){
 						$form->executeButtonSubmitListener($player, $packet->actionIndex);
 					}else{
@@ -51,7 +51,7 @@ class PacketListener implements Listener{
 					break;
 				case NpcRequestPacket::REQUEST_EXECUTE_OPENING_COMMANDS:
 					$logger->debug("Received a NpcRequestPacket action " . $packet->actionIndex);
-					$form = DialogFormStore::getFormByEntity($entity);
+					$form = DialogFormStore::getFormById($packet->sceneName);
 					if($form !== null){
 						$form->executeOpenListener($player);
 					}else{
@@ -59,7 +59,7 @@ class PacketListener implements Listener{
 					}
 					break;
 				case NpcRequestPacket::REQUEST_EXECUTE_CLOSING_COMMANDS:
-					$form = DialogFormStore::getFormByEntity($entity);
+					$form = DialogFormStore::getFormById($packet->sceneName);
 					if($form !== null){
 						$form->executeCloseListener($player);
 					}else{
@@ -68,7 +68,7 @@ class PacketListener implements Listener{
 					break;
 				default:
 				{
-					$logger->warning("Unhandled NpcRequestPacket for $username because the request type was unknown");
+					$logger->warning("Unhandled NpcRequestPacket for $username because the request type was unknown (unimplemented)");
 				}
 			}
 		}
