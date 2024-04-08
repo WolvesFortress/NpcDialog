@@ -11,7 +11,6 @@ declare(strict_types=1);
 namespace NpcDialog;
 
 use Closure;
-use InvalidArgumentException;
 use pocketmine\entity\Entity;
 use pocketmine\form\FormValidationException;
 use pocketmine\network\mcpe\protocol\NpcDialoguePacket;
@@ -33,7 +32,7 @@ class DialogForm{
 	private ?Closure $closeListener = null;
 	private ?Closure $openListener = null;
 
-	public function __construct(private string $dialogText, ?Closure $openListener = null, ?Closure $closeListener = null, ?string $id = null){
+	public function __construct(private string $dialogText, ?Closure $openListener = null, ?Closure $closeListener = null, ?string $id = null, private bool $closeOnSubmit = true){
 		$this->id = $id ?? Uuid::uuid4()->toString();
 		$this->setOpenListener($openListener);
 		$this->setCloseListener($closeListener);
@@ -68,6 +67,16 @@ class DialogForm{
 
 	public function getEntity() : ?Entity{
 		return $this->entity;
+	}
+
+	public function isClosingOnSubmit() : bool{
+		return $this->closeOnSubmit;
+	}
+
+	/** @return $this */
+	public function setCloseOnSubmit(bool $closeOnSubmit = true) : self{
+		$this->closeOnSubmit = $closeOnSubmit;
+		return $this;
 	}
 
 	public function getCloseListener() : ?Closure{
@@ -109,15 +118,17 @@ class DialogForm{
 		}
 	}
 
-	public function executeButtonSubmitListener(Player $player, int $button, bool $close = true) : void{
+	public function executeButtonSubmitListener(Player $player, int $button) : void{
 		if(array_key_exists($button, $this->buttons)){
 			$this->buttons[$button]->executeSubmitListener($player);
-			//It's possible to resend the form with the same id and change it's properties, i.e. the text
-			if($close) {
-				//close form after submit otherwise the player is stuck in the form
+			// Close form after submit, otherwise the player is stuck in the form
+			// It's also possible to resend the form with modified data without having to close it by using the same ID
+			if($this->closeOnSubmit){
 				$this->close($player);
 			}
 		}else{
+			// Close the form on error anyways
+			$this->close($player);
 			throw new FormValidationException("Couldn't validate DialogForm with response $button: button doesn't exist.");
 		}
 	}
