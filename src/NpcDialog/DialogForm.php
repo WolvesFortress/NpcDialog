@@ -136,6 +136,7 @@ class DialogForm{
 	/** @return $this */
 	public function pairWithEntity(Entity $entity) : self{
 		$this->entity?->getNetworkProperties()->setByte(EntityMetadataProperties::HAS_NPC_COMPONENT, 0);
+		//TODO clear other properties?
 
 		if(($otherForm = DialogFormStore::getFormByEntity($entity)) !== null){
 			DialogFormStore::unregisterForm($otherForm);
@@ -154,12 +155,12 @@ class DialogForm{
 	protected function onCreation() : void{ }
 
 	public function open(Player $player, ?int $eid = null, ?string $nametag = null) : void{
-		$pk = NpcDialoguePacket::create($eid ?? $this->entity->getId(), NpcDialoguePacket::ACTION_OPEN, $this->getDialogText(), $this->getId(), $nametag ?? $this->entity->getNameTag(), $this->getActions());
+		$pk = NpcDialoguePacket::create($eid ?? $this->entity?->getId() ?? $player->getId(), NpcDialoguePacket::ACTION_OPEN, $this->getDialogText(), $this->getId(), $nametag ?? $this->entity?->getNameTag() ?? $player->getNameTag(), $this->getActions());
 		$player->getNetworkSession()->sendDataPacket($pk);
 	}
 
 	public function close(Player $player) : void{
-		$pk = NpcDialoguePacket::create($this->entity->getId(), NpcDialoguePacket::ACTION_CLOSE, $this->getDialogText(), $this->getId(), $this->entity->getNameTag(), $this->getActions());
+		$pk = NpcDialoguePacket::create($this->entity?->getId() ?? $player->getId(), NpcDialoguePacket::ACTION_CLOSE, $this->getDialogText(), $this->getId(), $this->entity->getNameTag(), $this->getActions());
 		$player->getNetworkSession()->sendDataPacket($pk);
 	}
 }
