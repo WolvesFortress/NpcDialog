@@ -13,6 +13,7 @@ namespace NpcDialog;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerEntityInteractEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
+use pocketmine\network\mcpe\protocol\NpcDialoguePacket;
 use pocketmine\network\mcpe\protocol\NpcRequestPacket;
 use pocketmine\Server;
 
@@ -47,6 +48,8 @@ class PacketListener implements Listener{
 						$form->executeButtonSubmitListener($player, $packet->actionIndex);
 					}else{
 						$logger->warning("Unhandled NpcRequestPacket for $username because there wasn't a registered form on the store");
+						//close the form
+						$player->getNetworkSession()->sendDataPacket(NpcDialoguePacket::create($packet->actorRuntimeId, NpcDialoguePacket::ACTION_CLOSE, "", "", "", ""));
 					}
 					break;
 				case NpcRequestPacket::REQUEST_EXECUTE_OPENING_COMMANDS:
@@ -56,6 +59,8 @@ class PacketListener implements Listener{
 						$form->executeOpenListener($player);
 					}else{
 						$logger->warning("Unhandled NpcRequestPacket for $username because there wasn't a registered form on the store");
+						//close the form
+//						$player->getNetworkSession()->sendDataPacket(NpcDialoguePacket::create($packet->actorRuntimeId, NpcDialoguePacket::ACTION_CLOSE, "","","",""));
 					}
 					break;
 				case NpcRequestPacket::REQUEST_EXECUTE_CLOSING_COMMANDS:
@@ -64,6 +69,8 @@ class PacketListener implements Listener{
 						$form->executeCloseListener($player);
 					}else{
 						$logger->warning("Unhandled NpcRequestPacket for $username because there wasn't a registered form on the store");
+						//close the form
+						$player->getNetworkSession()->sendDataPacket(NpcDialoguePacket::create($packet->actorRuntimeId, NpcDialoguePacket::ACTION_CLOSE, "", "", "", ""));
 					}
 					break;
 				default:
