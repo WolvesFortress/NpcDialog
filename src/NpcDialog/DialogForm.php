@@ -55,6 +55,9 @@ class DialogForm{
 
 	/** @return $this */
 	public function addButton(string $name = "", string $command = "", ?Closure $submitListener = null) : self{
+		if($submitListener !== null){
+			Utils::validateCallableSignature(function(Player $player) : bool{ return true; }, $submitListener);
+		}
 		$this->buttons[] = new Button($name, $command, $submitListener);
 		return $this;
 	}
@@ -84,7 +87,7 @@ class DialogForm{
 	/** @return $this */
 	public function setCloseListener(?Closure $closeListener) : self{
 		if($closeListener !== null){
-			Utils::validateCallableSignature(function(Player $player){ }, $closeListener);
+			Utils::validateCallableSignature(function(Player $player) : void{ }, $closeListener);
 		}
 		$this->closeListener = $closeListener;
 
@@ -103,7 +106,7 @@ class DialogForm{
 
 	public function setOpenListener(?Closure $openListener) : self{
 		if($openListener !== null){
-			Utils::validateCallableSignature(function(Player $player){ }, $openListener);
+			Utils::validateCallableSignature(function(Player $player) : void{ }, $openListener);
 		}
 		$this->openListener = $openListener;
 
