@@ -85,10 +85,11 @@ class Button implements JsonSerializable{
 		return $this;
 	}
 
-	public function executeSubmitListener(Player $player) : void{
+	public function executeSubmitListener(Player $player) : bool{
 		if($this->submitListener !== null){
-			($this->submitListener)($player);
+			return ($this->submitListener)($player);
 		}
+		return false;
 	}
 
 	public function jsonSerialize() : array{

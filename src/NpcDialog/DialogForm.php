@@ -118,10 +118,10 @@ class DialogForm{
 
 	public function executeButtonSubmitListener(Player $player, int $button) : void{
 		if(array_key_exists($button, $this->buttons)){
-			$this->buttons[$button]->executeSubmitListener($player);
+			$close = $this->buttons[$button]->executeSubmitListener($player);
 			// Close form after submit, otherwise the player is stuck in the form
 			// It's also possible to resend the form with modified data without having to close it by using the same ID
-			if($this->closeOnSubmit){
+			if($close || $this->closeOnSubmit){
 				$this->close($player);
 			}
 		}else{
