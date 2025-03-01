@@ -24,17 +24,9 @@ class Button implements JsonSerializable{
 
 	private ?string $data = null;
 
-	private int $mode = self::MODE_BUTTON;
+	private ButtonMode $mode = ButtonMode::BUTTON;
 
-	private const MODE_BUTTON = 0;//TODO use enum
-	private const MODE_ON_CLOSE = 1;
-	private const MODE_ON_OPEN = 2;
-
-	private int $type = self::TYPE_COMMAND; // ????
-
-	private const TYPE_URL = 0; //TODO use enum
-	private const TYPE_COMMAND = 1;
-	private const TYPE_INVALID = 2;
+	private ButtonType $type = ButtonType::COMMAND;
 
 	/** @var null|Closure(Player $player) : bool $submitListener */
 	private ?Closure $submitListener;
@@ -62,18 +54,18 @@ class Button implements JsonSerializable{
 		return $this;
 	}
 
-	public function getMode() : int{ return $this->mode; }
+	public function getMode() : ButtonMode{ return $this->mode; }
 
 	/** @return $this */
-	public function setMode(int $mode = self::MODE_BUTTON) : self{
+	public function setMode(ButtonMode $mode = ButtonMode::BUTTON) : self{
 		$this->mode = $mode;
 		return $this;
 	}
 
-	public function getType() : int{ return $this->type; }
+	public function getType() : ButtonType{ return $this->type; }
 
 	/** @return $this */
-	public function setType(int $type = self::TYPE_COMMAND) : self{
+	public function setType(ButtonType $type = ButtonType::COMMAND) : self{
 		$this->type = $type;
 		return $this;
 	}
