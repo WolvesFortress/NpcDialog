@@ -137,14 +137,9 @@ class DialogForm{
 	/** @return $this */
 	public function pairWithEntity(Entity $entity, string $interactiveTag = "") : self{
 		//TODO check if we can pair the form to multiple entities
-//		if($this->entity !== null){
-//			$this->entity->getNetworkProperties()->setByte(EntityMetadataProperties::HAS_NPC_COMPONENT, 0);
-//			$this->entity->getNetworkProperties()->setString(EntityMetadataProperties::INTERACTIVE_TAG, "");
-//			$this->entity->getNetworkProperties()->setString(EntityMetadataProperties::NPC_ACTIONS, "");
-//		}
 
-		if(($otherForm = DialogFormStore::getFormByEntity($entity)) !== null){
-			var_dump("Form already paired with another entity: " . $entity->getId() . " vs " . $this->entity->getId());
+		if(($otherForm = DialogFormStore::getFormByEntity($entity)) !== null && $otherForm !== $this && $entity !== $this->entity){
+			var_dump("Form already paired with another entity: " . $entity->getId() . " vs " . ($this->entity?->getId() !== null ? $this->entity->getId() : "null"));
 			DialogFormStore::unregisterForm($otherForm);
 		}
 
@@ -157,15 +152,6 @@ class DialogForm{
 	protected function onCreation() : void{ }
 
 	public function open(Player $player, ?int $eid = null, ?string $nametag = null) : void{
-		if($this->entity === null){
-			if(($otherForm = DialogFormStore::getFormByEntity($player)) !== null){
-				var_dump("Form already paired with another entity: " . $player->getId() . " with " . $otherForm->getId());
-				DialogFormStore::unregisterForm($otherForm);
-			}
-			//use player
-			$this->setEntity($player);
-		}
-
 		$pk = NpcDialoguePacket::create($eid ?? $this->entity?->getId() ?? $player->getId(), NpcDialoguePacket::ACTION_OPEN, $this->getDialogText(), $this->getId(), $nametag ?? $this->entity?->getNameTag() ?? $player->getNameTag(), $this->getActions());
 		$player->getNetworkSession()->sendDataPacket($pk);
 	}
@@ -176,8 +162,8 @@ class DialogForm{
 	}
 
 	private function setEntity(Entity $entity = null) : void{
-//		$this->entity?->getNetworkProperties()->setByte(EntityMetadataProperties::HAS_NPC_COMPONENT, 0);
-//		$this->entity?->getNetworkProperties()->setString(EntityMetadataProperties::NPC_ACTIONS, "");
+		$this->entity?->getNetworkProperties()->setByte(EntityMetadataProperties::HAS_NPC_COMPONENT, 0);
+		$this->entity?->getNetworkProperties()->setString(EntityMetadataProperties::NPC_ACTIONS, "");
 		$this->entity = $entity;
 		$this->entity?->getNetworkProperties()->setByte(EntityMetadataProperties::HAS_NPC_COMPONENT, 1);
 		$this->entity?->getNetworkProperties()->setString(EntityMetadataProperties::NPC_ACTIONS, $this->getActions());
