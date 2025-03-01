@@ -138,11 +138,6 @@ class DialogForm{
 	public function pairWithEntity(Entity $entity, string $interactiveTag = "") : self{
 		//TODO check if we can pair the form to multiple entities
 
-		if(($otherForm = DialogFormStore::getFormByEntity($entity)) !== null && $otherForm !== $this && $entity !== $this->entity){
-			var_dump("Form already paired with another entity: " . $entity->getId() . " vs " . ($this->entity?->getId() !== null ? $this->entity->getId() : "null"));
-			DialogFormStore::unregisterForm($otherForm);
-		}
-
 		$this->setEntity($entity);
 		$this->entity->getNetworkProperties()->setString(EntityMetadataProperties::INTERACTIVE_TAG, $interactiveTag);
 
@@ -152,6 +147,10 @@ class DialogForm{
 	protected function onCreation() : void{ }
 
 	public function open(Player $player, ?int $eid = null, ?string $nametag = null) : void{
+		if(($otherForm = DialogFormStore::getFormByEntity($player)) !== null && $otherForm !== $this && $player !== $this->entity){
+			var_dump("Form already paired with another entity: " . $player->getId() . " vs " . ($this->entity?->getId() !== null ? $this->entity->getId() : "null"));
+			DialogFormStore::unregisterForm($otherForm);
+		}
 		$pk = NpcDialoguePacket::create($eid ?? $this->entity?->getId() ?? $player->getId(), NpcDialoguePacket::ACTION_OPEN, $this->getDialogText(), $this->getId(), $nametag ?? $this->entity?->getNameTag() ?? $player->getNameTag(), $this->getActions());
 		$player->getNetworkSession()->sendDataPacket($pk);
 	}
