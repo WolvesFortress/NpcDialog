@@ -22,7 +22,7 @@ class DialogFormStore{
 	/** @var DialogForm[] */
 	static private array $forms = [];
 
-	static public function getFormByEntity(Entity $entity) : ?DialogForm{
+	static public function getFormByEntity(Entity $entity) : ?DialogForm{//FIXME this might be multible forms
 		foreach(self::$forms as $form){
 			if($form->getEntity() === $entity){
 				return $form;
@@ -35,6 +35,7 @@ class DialogFormStore{
 		return self::$forms[$id] ?? null;
 	}
 
+	/** @throws InvalidArgumentException */
 	static public function registerForm(DialogForm &$form, bool $overwrite = false) : void{
 		if(!$overwrite && array_key_exists($form->getId(), self::$forms)){
 			throw new InvalidArgumentException("Trying to overwrite an already registered npc form");
@@ -43,6 +44,7 @@ class DialogFormStore{
 		self::$forms[$form->getId()] = &$form;
 	}
 
+	/** @throws InvalidArgumentException */
 	static public function unregisterForm(DialogForm $form) : void{
 		if(array_key_exists($form->getId(), self::$forms)){
 			unset(self::$forms[$form->getId()]);

@@ -11,9 +11,14 @@ declare(strict_types=1);
 namespace NpcDialog;
 
 use Closure;
+use DaveRandom\CallbackValidator\CallbackType;
+use DaveRandom\CallbackValidator\InvalidCallbackException;
+use DaveRandom\CallbackValidator\ParameterType;
+use DaveRandom\CallbackValidator\ReturnType;
 use JsonSerializable;
 use pocketmine\player\Player;
 use pocketmine\utils\Utils;
+use TypeError;
 
 class Button implements JsonSerializable{
 
@@ -31,8 +36,10 @@ class Button implements JsonSerializable{
 	private const TYPE_COMMAND = 1;
 	private const TYPE_INVALID = 2;
 
+	/** @var null|Closure(Player $player) : bool $submitListener */
 	private ?Closure $submitListener;
 
+	/** @throws TypeError|InvalidCallbackException */
 	public function __construct(private string $name = "", private string $command = "", ?Closure $submitListener = null){
 		$this->setSubmitListener($submitListener);
 	}
@@ -75,10 +82,18 @@ class Button implements JsonSerializable{
 		return $this->submitListener;
 	}
 
-	/** @return $this */
+	/**
+	 * @param null|Closure(Player $player) : bool $submitListener
+	 *
+	 * @return $this
+	 * @throws InvalidCallbackException|TypeError
+	 */
 	public function setSubmitListener(?Closure $submitListener) : self{
 		if($submitListener !== null){
-			Utils::validateCallableSignature(function(Player $player){ }, $submitListener);
+			Utils::validateCallableSignature(new CallbackType(
+				new ReturnType("bool"),
+				new ParameterType("player", Player::class)
+			), $submitListener);
 		}
 
 		$this->submitListener = $submitListener;

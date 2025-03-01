@@ -11,6 +11,12 @@ declare(strict_types=1);
 namespace NpcDialog;
 
 use Closure;
+use DaveRandom\CallbackValidator\CallbackType;
+use DaveRandom\CallbackValidator\InvalidCallbackException;
+use DaveRandom\CallbackValidator\ParameterType;
+use DaveRandom\CallbackValidator\ReturnType;
+use InvalidArgumentException;
+use LogicException;
 use pocketmine\entity\Entity;
 use pocketmine\form\FormValidationException;
 use pocketmine\network\mcpe\protocol\NpcDialoguePacket;
@@ -18,6 +24,7 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
 use pocketmine\player\Player;
 use pocketmine\utils\Utils;
 use Ramsey\Uuid\Uuid;
+use TypeError;
 use function array_key_exists;
 use function json_encode;
 
@@ -32,6 +39,12 @@ class DialogForm{
 	private ?Closure $closeListener = null;
 	private ?Closure $openListener = null;
 
+	/**
+	 * @param null|Closure(Player $player) : void $openListener
+	 * @param null|Closure(Player $player) : void $closeListener
+	 *
+	 * @throws TypeError|InvalidCallbackException|InvalidArgumentException
+	 */
 	public function __construct(private string $dialogText, ?Closure $openListener = null, ?Closure $closeListener = null, ?string $id = null, private bool $closeOnSubmit = true, bool $overwrite = false){
 		$this->id = $id ?? Uuid::uuid4()->toString();
 		$this->setOpenListener($openListener);
@@ -53,10 +66,17 @@ class DialogForm{
 		return $this;
 	}
 
-	/** @return $this */
+	/**
+	 * @param null|Closure(Player $player) : bool $submitListener
+	 * @return $this
+	 * @throws InvalidCallbackException|TypeError
+	 */
 	public function addButton(string $name = "", string $command = "", ?Closure $submitListener = null) : self{
 		if($submitListener !== null){
-			Utils::validateCallableSignature(function(Player $player) : bool{ return true; }, $submitListener);
+			Utils::validateCallableSignature(new CallbackType(
+				new ReturnType("bool"),
+				new ParameterType("player", Player::class)
+			), $submitListener);
 		}
 		$this->buttons[] = new Button($name, $command, $submitListener);
 		return $this;
@@ -84,10 +104,17 @@ class DialogForm{
 		return $this->closeListener;
 	}
 
-	/** @return $this */
+	/**
+	 * @param null|Closure(Player $player) : void $closeListener
+	 * @return $this
+	 * @throws InvalidCallbackException|TypeError
+	 */
 	public function setCloseListener(?Closure $closeListener) : self{
 		if($closeListener !== null){
-			Utils::validateCallableSignature(function(Player $player) : void{ }, $closeListener);
+			Utils::validateCallableSignature(new CallbackType(
+				new ReturnType("void"),
+				new ParameterType("player", Player::class)
+			), $closeListener);
 		}
 		$this->closeListener = $closeListener;
 
@@ -104,9 +131,17 @@ class DialogForm{
 		return $this->openListener;
 	}
 
+	/**
+	 * @param null|Closure(Player $player) : void $openListener
+	 * @return $this
+	 * @throws InvalidCallbackException|TypeError
+	 */
 	public function setOpenListener(?Closure $openListener) : self{
 		if($openListener !== null){
-			Utils::validateCallableSignature(function(Player $player) : void{ }, $openListener);
+			Utils::validateCallableSignature(new CallbackType(
+				new ReturnType("void"),
+				new ParameterType("player", Player::class)
+			), $openListener);
 		}
 		$this->openListener = $openListener;
 
@@ -119,6 +154,7 @@ class DialogForm{
 		}
 	}
 
+	/** @throws FormValidationException|LogicException */
 	public function executeButtonSubmitListener(Player $player, int $button) : void{
 		if(array_key_exists($button, $this->buttons)){
 			$close = $this->buttons[$button]->executeSubmitListener($player);
@@ -146,6 +182,7 @@ class DialogForm{
 
 	protected function onCreation() : void{ }
 
+	/** @throws InvalidArgumentException|LogicException */
 	public function open(Player $player, ?int $eid = null, ?string $nametag = null) : void{
 		if(($otherForm = DialogFormStore::getFormByEntity($player)) !== null && $otherForm !== $this && $player !== $this->entity){
 			var_dump("Form already paired with another entity: " . $player->getId() . " vs " . ($this->entity?->getId() !== null ? $this->entity->getId() : "null"));
@@ -155,6 +192,7 @@ class DialogForm{
 		$player->getNetworkSession()->sendDataPacket($pk);
 	}
 
+	/** @throws LogicException */
 	public function close(Player $player) : void{
 		$pk = NpcDialoguePacket::create($this->entity?->getId() ?? $player->getId(), NpcDialoguePacket::ACTION_CLOSE, "", "", "", "");
 		$player->getNetworkSession()->sendDataPacket($pk);

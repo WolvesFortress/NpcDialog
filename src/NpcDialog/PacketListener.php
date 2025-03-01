@@ -10,15 +10,20 @@ declare(strict_types=1);
 
 namespace NpcDialog;
 
+use InvalidArgumentException;
+use LogicException;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerEntityInteractEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
+use pocketmine\form\FormValidationException;
 use pocketmine\network\mcpe\protocol\NpcDialoguePacket;
 use pocketmine\network\mcpe\protocol\NpcRequestPacket;
 use pocketmine\Server;
+use RuntimeException;
 
 class PacketListener implements Listener{
 
+	/** @throws FormValidationException|LogicException|RuntimeException */
 	public function onPacketReceiveEvent(DataPacketReceiveEvent $event) : void{
 		$packet = $event->getPacket();
 		if($packet instanceof NpcRequestPacket){
@@ -26,7 +31,8 @@ class PacketListener implements Listener{
 		}
 	}
 
-	private function handleNpcRequest(DataPacketReceiveEvent $event){
+	/** @throws LogicException|RuntimeException|FormValidationException */
+	private function handleNpcRequest(DataPacketReceiveEvent $event) : void{
 		/** @var NpcRequestPacket $packet */
 		if(($packet = $event->getPacket()) instanceof NpcRequestPacket){
 			$server = Server::getInstance();
@@ -81,6 +87,7 @@ class PacketListener implements Listener{
 		}
 	}
 
+	/** @throws InvalidArgumentException|LogicException|RuntimeException */
 	public function onPlayerEntityInteractEvent(PlayerEntityInteractEvent $event) : void{
 		$player = $event->getPlayer();
 		$entity = $event->getEntity();
