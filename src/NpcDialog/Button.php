@@ -22,7 +22,8 @@ use TypeError;
 
 class Button implements JsonSerializable{
 
-	private ?string $data = null;
+	/** @phpstan-var list<mixed>|null */
+	private ?array $data = [];
 
 	private ButtonMode $mode = ButtonMode::BUTTON;
 
@@ -70,6 +71,14 @@ class Button implements JsonSerializable{
 		return $this;
 	}
 
+	public function getData() : ?array{ return $this->data; }
+
+	/** @return $this */
+	public function setData(?array $data) : Button{
+		$this->data = $data;
+		return $this;
+	}
+
 	public function getSubmitListener() : ?Closure{
 		return $this->submitListener;
 	}
@@ -102,9 +111,13 @@ class Button implements JsonSerializable{
 	public function jsonSerialize() : array{
 		return [
 			"button_name" => $this->name,//the name of the button is only set if mode is 0 (button)
-			"data" => $this->data,//the data of the button appears to be null????
+			"data" => $this->data,//the data of the button is null when type is url
 			"mode" => $this->mode,//0 = button, 1 = on close, 2 = on open
-			"text" => $this->command,//the text in the command field
+			"text" => $this->command,//the text in the command field @see https://github.com/refteams/libNpcDialogue/blob/pm5/main/src/ref/libNpcDialogue/form/NpcDialogueButtonData.php#L55C3-L58C28
+//			$this->data = array_map(static fn($str) => [
+//				"cmd_line" => $str,
+//				"cmd_ver" => self::CMD_VER // 17 in 1.18.0.2.0, and 12 in 1.16.0.2.0
+//			], explode("\n", $text));
 			"type" => $this->type//always 1 (command) when not education edition
 		];
 	}
