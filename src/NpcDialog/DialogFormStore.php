@@ -24,7 +24,7 @@ class DialogFormStore{
 
 	static public function getFormByEntity(Entity $entity) : ?DialogForm{//FIXME this might be multible forms
 		foreach(self::$forms as $form){
-			if($form->getEntity() === $entity){
+			if($form->getEntity() === $entity){//TODO check if the entity has the HAS_NPC_COMPONENT property
 				return $form;
 			}
 		}
